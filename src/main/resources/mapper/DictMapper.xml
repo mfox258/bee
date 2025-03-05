@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mindskip.xzs.repository.DictMapper">
+
+
+  <select id="dictPage" resultType="com.mindskip.xzs.domain.Dict">
+    select *
+    from t_dict
+    where deleted=0
+      <if test="vm.keyword!=null and vm.keyword!=''">
+        and (type like concat ('%',#{vm.keyword},'%') or value like concat ('%',#{vm.keyword},'%'))
+      </if>
+  </select>
+</mapper>

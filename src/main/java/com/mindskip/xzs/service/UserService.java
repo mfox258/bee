@@ -1,5 +1,6 @@
 package com.mindskip.xzs.service;
 
+import com.mindskip.xzs.domain.SchedulingInfo;
 import com.mindskip.xzs.domain.other.KeyValue;
 import com.mindskip.xzs.domain.User;
 import com.mindskip.xzs.viewmodel.admin.user.UserPageRequestVM;
@@ -125,4 +126,6 @@ public interface UserService extends BaseService<User> {
     User selectByWxOpenId(String wxOpenId);
 
     void changePicture(User user, String imagePath);
+
+    List<SchedulingInfo> list(String queryMonth);
 }

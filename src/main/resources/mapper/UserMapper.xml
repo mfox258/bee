@@ -409,6 +409,21 @@
     where deleted=0  and  wx_open_id = #{wxOpenId}
     limit 1
   </select>
+    <select id="list" resultType="com.mindskip.xzs.domain.SchedulingInfo">
+      select
+        t1.real_name as userName,
+        `date` as 'date',
+        classes as classes ,
+        `month` as 'month'
+      from
+        t_user t1
+          left join t_scheduling_info t2 on t1.real_name =t2.user_name and t2.`month` = #{queryMonth}
+      where
+        t1.`role` =1
+      and t1.status=1
+      and t1.deleted=0
+      order by user_level asc
+    </select>
 
 
 </mapper>

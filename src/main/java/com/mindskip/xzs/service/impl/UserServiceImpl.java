@@ -1,5 +1,6 @@
 package com.mindskip.xzs.service.impl;
 
+import com.mindskip.xzs.domain.SchedulingInfo;
 import com.mindskip.xzs.domain.other.KeyValue;
 import com.mindskip.xzs.exception.BusinessException;
 import com.mindskip.xzs.domain.User;
@@ -156,5 +157,11 @@ public class UserServiceImpl extends BaseServiceImpl<User> implements UserServic
         changePictureUser.setId(user.getId());
         changePictureUser.setImagePath(imagePath);
         userMapper.updateByPrimaryKeySelective(changePictureUser);
+    }
+
+    @Override
+    public List<SchedulingInfo> list(String queryMonth) {
+        return userMapper.list(queryMonth);
+
     }
 }

@@ -2,6 +2,7 @@ package com.mindskip.xzs.controller.admin;
 
 import com.mindskip.xzs.base.BaseApiController;
 import com.mindskip.xzs.base.RestResponse;
+import com.mindskip.xzs.domain.SchedulingInfo;
 import com.mindskip.xzs.domain.other.KeyValue;
 import com.mindskip.xzs.domain.User;
 import com.mindskip.xzs.domain.UserEventLog;
@@ -45,6 +46,12 @@ public class UserController extends BaseApiController {
         PageInfo<User> pageInfo = userService.userPage(model);
         PageInfo<UserResponseVM> page = PageInfoHelper.copyMap(pageInfo, d -> UserResponseVM.from(d));
         return RestResponse.ok(page);
+    }
+
+    @RequestMapping(value = "/list", method = RequestMethod.GET)
+    public RestResponse<List<SchedulingInfo>> list(@RequestParam("queryMonth") String queryMonth) {
+        List<SchedulingInfo> pageInfo = userService.list(queryMonth);
+        return RestResponse.ok(pageInfo);
     }
 
 

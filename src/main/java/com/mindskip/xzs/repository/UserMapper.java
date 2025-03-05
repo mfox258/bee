@@ -1,5 +1,7 @@
 package com.mindskip.xzs.repository;
 
+import com.github.pagehelper.PageInfo;
+import com.mindskip.xzs.domain.SchedulingInfo;
 import com.mindskip.xzs.domain.other.KeyValue;
 import com.mindskip.xzs.domain.User;
 import com.mindskip.xzs.viewmodel.admin.user.UserPageRequestVM;
@@ -128,4 +130,6 @@ public interface UserMapper extends BaseMapper<User> {
 
 
     User selectByWxOpenId(@Param("wxOpenId") String wxOpenId);
+
+    List<SchedulingInfo> list(@Param("queryMonth") String queryMonth);
 }
