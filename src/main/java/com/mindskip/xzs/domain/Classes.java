@@ -8,16 +8,15 @@ import lombok.Data;
 import java.io.Serializable;
 
 @Data
-@TableName("t_dict")
-public class Dict implements Serializable {
+@TableName("t_classes")
+public class Classes implements Serializable {
 
     private static final long serialVersionUID = -7797183521247423117L;
     @TableId(type = IdType.AUTO)
     private Long id;
 
-    private String code;
-    private String value;
-    private String type;
+    private String classes;
+    private Integer isCount;
     private Boolean deleted;
 
 }

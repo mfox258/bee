@@ -5,6 +5,7 @@ import com.mindskip.xzs.base.RestResponse;
 import com.mindskip.xzs.service.SchedulingInfoService;
 import com.mindskip.xzs.utils.ExcelUtils;
 import com.mindskip.xzs.viewmodel.scheduling.SchedulingEditRequest;
+import com.mindskip.xzs.viewmodel.scheduling.SchedulingStatisticsResponse;
 import org.apache.poi.ss.SpreadsheetVersion;
 import org.apache.poi.ss.formula.EvaluationWorkbook;
 import org.apache.poi.ss.formula.udf.UDFFinder;
@@ -43,4 +44,17 @@ public class SchedulingInfoController extends BaseApiController {
         ExcelUtils.downLoadExcel("scheduling.xls",response,workbook);
 
     }
+
+    @GetMapping("/statistics/list")
+    public RestResponse<List<SchedulingStatisticsResponse>> statisticsList(@RequestParam("month") String month) {
+        List<SchedulingStatisticsResponse> statisticsResponses =  this.schedulingInfoService.statisticsList(month);
+        return RestResponse.ok(statisticsResponses);
+    }
+    @GetMapping("/statistics/export")
+    public void exportStatistics(@RequestParam("month") String month, HttpServletResponse response) {
+        Workbook workbook=this.schedulingInfoService.exportStatistics(month);
+        ExcelUtils.downLoadExcel("scheduling.xls",response,workbook);
+
+    }
+
 }
