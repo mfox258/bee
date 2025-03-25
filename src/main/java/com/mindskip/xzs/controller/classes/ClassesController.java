@@ -1,6 +1,7 @@
 package com.mindskip.xzs.controller.classes;
 
 import com.github.pagehelper.PageInfo;
+import com.mindskip.xzs.aspect.annotation.LogRecord;
 import com.mindskip.xzs.base.BaseApiController;
 import com.mindskip.xzs.base.RestResponse;
 import com.mindskip.xzs.domain.Classes;
@@ -31,7 +32,6 @@ public class ClassesController extends BaseApiController {
         PageInfo<Classes> pageInfo = classesService.page(vm);
         return RestResponse.ok(pageInfo);
     }
-
     @RequestMapping(value = "/list", method = RequestMethod.GET)
     public RestResponse<List<String>> list(@RequestParam(value = "isCount",required = false) Integer isCount) {
         List<String> pageInfo = classesService.selectList(isCount);

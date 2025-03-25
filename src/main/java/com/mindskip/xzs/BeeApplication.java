@@ -15,7 +15,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @SpringBootApplication
 @EnableTransactionManagement
 @EnableConfigurationProperties(value = { SystemConfig.class})
-public class XzsApplication {
+public class BeeApplication {
 
     /**
      * The entry point of application.
@@ -23,6 +23,6 @@ public class XzsApplication {
      * @param args the input arguments
      */
     public static void main(String[] args) {
-        SpringApplication.run(XzsApplication.class, args);
+        SpringApplication.run(BeeApplication.class, args);
     }
 }

@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.collect.Lists;
+import com.mindskip.xzs.domain.Classes;
 import com.mindskip.xzs.domain.ClassesRule;
 import com.mindskip.xzs.domain.SchedulingInfo;
 import com.mindskip.xzs.domain.User;
@@ -151,34 +152,41 @@ public class SchedulingInfoServiceImpl extends ServiceImpl<SchedulingInfoMapper,
     public List<SchedulingStatisticsResponse> statisticsList(String month) {
         List<SchedulingStatisticsResponse> statisticsResponses = Lists.newArrayList();
         List<SchedulingInfo> schedulingInfos = userMapper.list(month);
+        List<String> classes = classesService.selectList(1);
         List<ClassesRule> classesRules = classesRuleService.selectList();
         Map<String, List<SchedulingInfo>> userSchedulings = schedulingInfos.stream().collect(Collectors.groupingBy(SchedulingInfo::getUserName));
+        Map<String, List<ClassesRule>> ruleMap = classesRules.stream().collect(Collectors.groupingBy(ClassesRule::getTargetClasses));
         userSchedulings.forEach((userName,list)->{
-            //将班次，次数,姓名 放进schedulingStatisticsResponses
-            classesRules.stream().collect(Collectors.groupingBy(ClassesRule::getTargetClasses)).forEach((targetClasses,ruleList)->{
+            classes.forEach(cl->{
                 SchedulingStatisticsResponse statisticsResponse = new SchedulingStatisticsResponse();
                 BigDecimal targetClassesNum=BigDecimal.ZERO;
                 //本班次+1
                 for (SchedulingInfo schedulingInfo : list) {
-                    if (Objects.equals(targetClasses,schedulingInfo.getClasses())){
+                    if (Objects.equals(cl,schedulingInfo.getClasses())){
                         targetClassesNum = targetClassesNum.add(new BigDecimal(1));
                         continue;
                     }
                 }
-                //映射的班次加对应系数
-                for (ClassesRule classesRule : ruleList) {
-                    for (SchedulingInfo schedulingInfo : list) {
-                        if (Objects.equals(classesRule.getClasses(),schedulingInfo.getClasses())){
-                            targetClassesNum = targetClassesNum.add(classesRule.getRatio());
-                            continue;
+                //将班次，次数,姓名 放进schedulingStatisticsResponses
+                List<ClassesRule> ruleList = ruleMap.get(cl);
+                if (CollectionUtils.isNotEmpty(ruleList)) {
+                    //映射的班次加对应系数
+                    for (ClassesRule classesRule : ruleList) {
+                        for (SchedulingInfo schedulingInfo : list) {
+                            if (Objects.equals(classesRule.getClasses(), schedulingInfo.getClasses())) {
+                                targetClassesNum = targetClassesNum.add(classesRule.getRatio());
+                                continue;
+                            }
                         }
                     }
                 }
+
                 statisticsResponse.setUserName(userName);
-                statisticsResponse.setClasses(targetClasses);
+                statisticsResponse.setClasses(cl);
                 statisticsResponse.setCount(targetClassesNum.setScale(1).toString());
                 statisticsResponses.add(statisticsResponse);
             });
+
 
         });
 

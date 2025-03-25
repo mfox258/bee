@@ -1,5 +1,6 @@
 package com.mindskip.xzs.configuration.spring.security;
 
+import com.mindskip.xzs.aspect.annotation.LogRecord;
 import com.mindskip.xzs.base.SystemCode;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;

@@ -4,11 +4,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.mindskip</groupId>
-    <artifactId>xzs</artifactId>
+    <artifactId>bee</artifactId>
     <version>3.9.0</version>
     <packaging>jar</packaging>
 
-    <name>xzs</name>
+    <name>bee</name>
     <url>https://www.mindskip.net/xzs.html</url>
     <description>学之思开源考试系统 - mysql版，支持多种题型：选择题、多选题、判断题、填空题、解答题以及数学公式，包含PC端、小程序端，扩展性强，部署方便(集成部署、前后端分离部署、docker部署)、界面设计友好、代码结构清晰</description>
 
@@ -18,7 +18,7 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <java.version>1.8</java.version>
-        <mysql.version>8.0.17</mysql.version>
+        <mysql.version>8.0.33</mysql.version>
         <spring.boot.version>2.1.6.RELEASE</spring.boot.version>
     </properties>
 
@@ -206,6 +206,16 @@
             <groupId>cn.afterturn</groupId>
             <artifactId>easypoi-base</artifactId>
             <version>4.4.0</version>
+        </dependency>
+        <!-- Spring Boot Starter AOP -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
+        </dependency>
+        <!-- AspectJ 依赖 -->
+        <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjweaver</artifactId>
         </dependency>
     </dependencies>
 
