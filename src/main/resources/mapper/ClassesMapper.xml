@@ -19,5 +19,9 @@
       and is_count=#{isCount}
     </if>
 
+    <if test="targetClasses!=null and targetClasses!=''">
+      and not exists(select id from t_classes_rule where t_classes_rule.target_classes=#{targetClasses} and t_classes_rule.classes=t_classes.classes)
+    </if>
+
   </select>
 </mapper>

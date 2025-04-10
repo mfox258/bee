@@ -20,8 +20,8 @@ public class ClassesServiceImpl extends ServiceImpl<ClassesMapper, Classes> impl
     private final ClassesMapper classesMapper;
 
     @Override
-    public List<String> selectList(Integer isCount) {
-        return this.classesMapper.list(isCount);
+    public List<String> selectList(Integer isCount, String targetClasses) {
+        return this.classesMapper.list(isCount,targetClasses);
     }
 
     @Override

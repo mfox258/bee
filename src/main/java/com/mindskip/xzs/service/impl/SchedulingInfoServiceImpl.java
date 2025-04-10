@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.collect.Lists;
-import com.mindskip.xzs.domain.Classes;
 import com.mindskip.xzs.domain.ClassesRule;
 import com.mindskip.xzs.domain.SchedulingInfo;
 import com.mindskip.xzs.domain.User;
@@ -103,7 +102,7 @@ public class SchedulingInfoServiceImpl extends ServiceImpl<SchedulingInfoMapper,
         //查询人员班次统计
         List<SchedulingStatisticsResponse> statisticsResponses = this.statisticsList(month);
         //查询需要统计的班次
-        List<String> classesList = classesService.selectList(1);
+        List<String> classesList = classesService.selectList(1, null);
         //查询员工列表
         List<User> allUser = userMapper.getAllUser();
         List<User> guests = allUser.stream().filter(user -> user.getRole() == 1).sorted(Comparator.comparing(User::getUserLevel)).collect(Collectors.toList());
@@ -152,7 +151,7 @@ public class SchedulingInfoServiceImpl extends ServiceImpl<SchedulingInfoMapper,
     public List<SchedulingStatisticsResponse> statisticsList(String month) {
         List<SchedulingStatisticsResponse> statisticsResponses = Lists.newArrayList();
         List<SchedulingInfo> schedulingInfos = userMapper.list(month);
-        List<String> classes = classesService.selectList(1);
+        List<String> classes = classesService.selectList(1, null);
         List<ClassesRule> classesRules = classesRuleService.selectList();
         Map<String, List<SchedulingInfo>> userSchedulings = schedulingInfos.stream().collect(Collectors.groupingBy(SchedulingInfo::getUserName));
         Map<String, List<ClassesRule>> ruleMap = classesRules.stream().collect(Collectors.groupingBy(ClassesRule::getTargetClasses));
