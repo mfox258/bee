@@ -218,6 +218,8 @@ public class ExcelUtils {
     }
 
     public static Workbook createSchedulingWorkbook(String name, List<String>keys, List<String>names, HashMap<String, Object> weekData, List<Map<String,Object>>data, String month){
+        // 设置语言环境为中文（简体中文）
+        Locale.setDefault(Locale.CHINA);
         int rowNum = 0;
         HSSFWorkbook workbook = new HSSFWorkbook();
         // 设置第一个sheet的名称

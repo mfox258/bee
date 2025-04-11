@@ -73,7 +73,7 @@ public class SchedulingInfoServiceImpl extends ServiceImpl<SchedulingInfoMapper,
         HashMap<String, Object> weekData = new HashMap<>();
         weekData.put("姓名","/");
         for (String date : monthDates) {
-            weekData.put(date,DateUtils.getDayOfWeek(date));
+            weekData.put(date,DateUtils.getDayOfWeek(date)+"");
         }
         Map<String, List<SchedulingInfo>> userSchedulings = schedulingInfos.stream().collect(Collectors.groupingBy(SchedulingInfo::getUserName));
         for (User guest : guests) {//按照排序优先展示用户
