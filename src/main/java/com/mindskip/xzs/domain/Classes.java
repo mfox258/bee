@@ -17,6 +17,7 @@ public class Classes implements Serializable {
 
     private String classes;
     private Integer isCount;
+    private String color;
     private Boolean deleted;
 
 }

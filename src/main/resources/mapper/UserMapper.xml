@@ -23,7 +23,7 @@
   </resultMap>
   <sql id="Base_Column_List">
     id, user_uuid, user_name, password, real_name, age, sex, birth_day, user_level, phone,
-    role, status, image_path, create_time, modify_time, last_active_time, deleted, wx_open_id
+    `role`, status, image_path, create_time, modify_time, last_active_time, deleted, wx_open_id
   </sql>
   <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
     select
@@ -39,7 +39,7 @@
     insert into t_user (id, user_uuid, user_name,
       password, real_name, age,
       sex, birth_day, user_level,
-      phone, role, status,
+      phone, `role`, status,
       image_path, create_time, modify_time,
       last_active_time, deleted, wx_open_id
       )
@@ -85,7 +85,7 @@
         phone,
       </if>
       <if test="role != null">
-        role,
+        `role`,
       </if>
       <if test="status != null">
         status,
@@ -197,7 +197,7 @@
         phone = #{phone,jdbcType=VARCHAR},
       </if>
       <if test="role != null">
-        role = #{role,jdbcType=INTEGER},
+        `role` = #{role,jdbcType=INTEGER},
       </if>
       <if test="status != null">
         status = #{status,jdbcType=INTEGER},
@@ -234,7 +234,7 @@
       birth_day = #{birthDay,jdbcType=TIMESTAMP},
       user_level = #{userLevel,jdbcType=INTEGER},
       phone = #{phone,jdbcType=VARCHAR},
-      role = #{role,jdbcType=INTEGER},
+        `role` = #{role,jdbcType=INTEGER},
       status = #{status,jdbcType=INTEGER},
       image_path = #{imagePath,jdbcType=VARCHAR},
       create_time = #{createTime,jdbcType=TIMESTAMP},
@@ -321,7 +321,7 @@
         and user_name like concat('%',#{userName},'%')
       </if>
       <if test="role != null ">
-        and role= #{role}
+        and `role`= #{role}
       </if>
     </where>
   </select>

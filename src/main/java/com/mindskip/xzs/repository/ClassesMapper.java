@@ -12,7 +12,7 @@ import java.util.List;
 @Mapper
 public interface ClassesMapper extends BaseMapper<Classes> {
 
-    List<String> list(@Param("isCount") Integer isCount,@Param("targetClasses") String targetClasses);
+    List<String> list(@Param("isCount") Integer isCount, @Param("targetClasses") String targetClasses,@Param("color")  Integer color);
 
     List<Classes> classesPage(@Param("vm") ClassesPageRequestVM vm);
 }

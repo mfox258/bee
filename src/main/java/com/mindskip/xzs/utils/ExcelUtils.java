@@ -436,31 +436,7 @@ public class ExcelUtils {
         }
     }
 
-    private static String getCellValue(Cell cell) {
-        if (cell == null) {
-            return "";
-        }
-        if (cell.getCellType() == CellType.NUMERIC) {
-            if (HSSFDateUtil.isCellDateFormatted(cell)) {
-                return HSSFDateUtil.getJavaDate(cell.getNumericCellValue()).toString();
-            } else {
-                return new BigDecimal(cell.getNumericCellValue()).toString();
-            }
-        } else if (cell.getCellType() == CellType.STRING) {
-            return StringUtils.trimToEmpty(cell.getStringCellValue());
-        } else if (cell.getCellType() == CellType.FORMULA) {
-            return StringUtils.trimToEmpty(cell.getCellFormula());
-        } else if (cell.getCellType() == CellType.BLANK) {
-            return "";
-        } else if (cell.getCellType() == CellType.BOOLEAN) {
-            return String.valueOf(cell.getBooleanCellValue());
-        } else if (cell.getCellType() == CellType.ERROR) {
-            return "ERROR";
-        } else {
-            return cell.toString().trim();
-        }
 
-    }
 
     /**
      * 前提：大数据量下

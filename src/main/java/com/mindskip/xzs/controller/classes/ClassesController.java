@@ -33,11 +33,12 @@ public class ClassesController extends BaseApiController {
         return RestResponse.ok(pageInfo);
     }
     @RequestMapping(value = "/list", method = RequestMethod.GET)
-    public RestResponse<List<String>> list(@RequestParam(value = "isCount",required = false) Integer isCount,@RequestParam(value = "targetClasses",required = false) String targetClasses) {
-        List<String> pageInfo = classesService.selectList(isCount,targetClasses);
+    public RestResponse<List<String>> list(@RequestParam(value = "isCount",required = false) Integer isCount,
+                                           @RequestParam(value = "targetClasses",required = false) String targetClasses,
+                                           @RequestParam(value = "color",required = false) Integer color) {
+        List<String> pageInfo = classesService.selectList(isCount,targetClasses,color);
         return RestResponse.ok(pageInfo);
     }
-
 
     @PostMapping(value = "/edit")
     public RestResponse edit(@RequestBody Classes classes) {

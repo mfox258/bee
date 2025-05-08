@@ -45,4 +45,19 @@ public class DateUtils {
         System.out.println(getDayOfWeek("2025-02-01"));
     }
 
+    public static String format(String dateStr) {
+        try {
+            // 定义输入的日期格式
+            DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            // 将字符串解析为LocalDate对象
+            LocalDate date = LocalDate.parse(dateStr, inputFormatter);
+            // 定义输出的日期格式
+            DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("M月d日");
+            // 将LocalDate对象格式化为目标字符串
+            return date.format(outputFormatter);
+        } catch (Exception e) {
+            // 如果解析失败，返回原始字符串或合适的错误提示
+            return dateStr;
+        }
+    }
 }

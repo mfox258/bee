@@ -10,7 +10,7 @@ import java.util.List;
 
 public interface ClassesService extends IService<Classes> {
 
-    List<String> selectList(Integer isCount, String targetClasses);
+    List<String> selectList(Integer isCount, String targetClasses, Integer color);
 
     PageInfo<Classes> page(ClassesPageRequestVM vm);
 }
