@@ -36,7 +36,9 @@ public class SchedulingInfoServiceImpl extends ServiceImpl<SchedulingInfoMapper,
     @Override
     @Transactional
     public void edit(SchedulingEditRequest request) {
-        this.baseMapper.delete(Wrappers.<SchedulingInfo>lambdaQuery().eq(SchedulingInfo::getMonth,request.getMonth()));
+        this.baseMapper.delete(Wrappers.<SchedulingInfo>lambdaQuery()
+                .eq(SchedulingInfo::getMonth,request.getMonth())
+                .in(CollectionUtils.isNotEmpty(request.getSchedulingInfos()),SchedulingInfo::getUserName,request.getSchedulingInfos().stream().map(SchedulingInfo::getUserName).collect(Collectors.toList())));
         this.saveBatch(request.getSchedulingInfos());
     }
 
