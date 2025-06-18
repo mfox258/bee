@@ -19,7 +19,7 @@ public class ClassesRuleServiceImpl extends ServiceImpl<ClassesRuleMapper, Class
 
     @Override
     public PageInfo<ClassesRule> page(ClassesRulePageRequestVM vm) {
-        return PageHelper.startPage(vm.getPageIndex(), vm.getPageSize(), "id asc").doSelectPageInfo(() ->
+        return PageHelper.startPage(vm.getPageIndex(), vm.getPageSize(), "classes asc").doSelectPageInfo(() ->
                 this.baseMapper.classesRulePage(vm)
         );
     }

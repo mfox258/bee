@@ -8,7 +8,7 @@
     from t_classes_rule
     where deleted=0
       <if test="vm.keyword!=null and vm.keyword!=''">
-        and target_classes like concat ('%',#{vm.keyword},'%')
+        and classes like concat ('%',#{vm.keyword},'%')
       </if>
   </select>
 </mapper>

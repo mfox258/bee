@@ -14,7 +14,12 @@ import org.apache.http.util.Asserts;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URLEncoder;
 import java.util.List;
 
 /**
@@ -36,11 +41,12 @@ public class WordGenServiceImpl  implements WordGenService {
      * @param time
      * @param location
      * @param files
+     * @param response
      * @return
      */
     @SneakyThrows
     @Override
-    public Object genWordWithJLMeeting(String fileName, String time, String location, List<MultipartFile> files) {
+    public void genWordWithJLMeeting(String fileName, String time, String location, List<MultipartFile> files, HttpServletResponse response) {
         NoticePaymentData noticePaymentData = new NoticePaymentData();
         noticePaymentData.setName(fileName);
         String[] date = time.split("-");
@@ -54,15 +60,59 @@ public class WordGenServiceImpl  implements WordGenService {
         MultipartFile image2 = files.get(1);
         InputStream inputStream1 = image1.getInputStream();
         InputStream inputStream2 = image2.getInputStream();
-        PictureRenderData pictureRenderData1 = Pictures.ofStream(inputStream1, PictureType.JPEG).size(520, 290).create();
-        noticePaymentData.setPictureA(pictureRenderData1);
-        PictureRenderData pictureRenderData2 = Pictures.ofStream(inputStream2,PictureType.JPEG).size(520, 290).create();
-        noticePaymentData.setPictureB(pictureRenderData2);
+//        PictureRenderData pictureRenderData1 = Pictures.ofStream(inputStream1, PictureType.JPEG).size(520, 290).create();
+//        noticePaymentData.setPictureA(pictureRenderData1);
+//        PictureRenderData pi9ctureRenderData2 = Pictures.ofStream(inputStream2,PictureType.JPEG).size(520, 290).create();
+//        noticePaymentData.setPictureB(pictureRenderData2);
+//
+////        String resource="template/模板.docx";
+//        String resource="/template/模板.docx";
+//        String target="/data/bee/file/"+fileName+".docx";
+//        PoiTlUtils.noticePayment(noticePaymentData,resource,target);
+        try {
+            inputStream1 = image1.getInputStream();
+            inputStream2 = image2.getInputStream();
+            PictureRenderData pictureRenderData1 = Pictures.ofStream(inputStream1, PictureType.JPEG).size(520, 290).create();
+            noticePaymentData.setPictureA(pictureRenderData1);
+            PictureRenderData pictureRenderData2 = Pictures.ofStream(inputStream2, PictureType.JPEG).size(520, 290).create();
+            noticePaymentData.setPictureB(pictureRenderData2);
 
-//        String resource="template/模板.docx";
-        String resource="D:\\文档\\bee\\模板.docx";
-        String target="D:\\文档\\bee\\zyz\\"+fileName+".docx";
-        PoiTlUtils.noticePayment(noticePaymentData,resource,target);
-        return null;
+            // 模板文件路径
+            String resource = "/template/模板.docx";
+            // 生成文件的路径
+            String target = "/data/bee/file/" + fileName + ".docx";
+            // 生成文件
+            PoiTlUtils.noticePayment(noticePaymentData, resource, target);
+
+            // 设置响应头
+            response.setContentType("application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+            response.setCharacterEncoding("utf-8");
+            String encodedFileName = URLEncoder.encode(fileName + ".docx", "UTF-8");
+            response.setHeader("Content-Disposition", "attachment;filename=" + encodedFileName);
+
+            // 读取生成的文件并写入响应输出流
+            try (FileInputStream fis = new FileInputStream(target);
+                 OutputStream os = response.getOutputStream()) {
+                byte[] buffer = new byte[1024];
+                int bytesRead;
+                while ((bytesRead = fis.read(buffer)) != -1) {
+                    os.write(buffer, 0, bytesRead);
+                }
+                os.flush();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (inputStream1 != null) {
+                    inputStream1.close();
+                }
+                if (inputStream2 != null) {
+                    inputStream2.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }
