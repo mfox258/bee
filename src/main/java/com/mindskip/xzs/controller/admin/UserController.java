@@ -49,8 +49,8 @@ public class UserController extends BaseApiController {
     }
 
     @RequestMapping(value = "/list", method = RequestMethod.GET)
-    public RestResponse<List<SchedulingInfo>> list(@RequestParam("queryMonth") String queryMonth) {
-        List<SchedulingInfo> pageInfo = userService.list(queryMonth);
+    public RestResponse<List<SchedulingInfo>> list(@RequestParam("startMonth") String startMonth,@RequestParam("endMonth") String endMonth) {
+        List<SchedulingInfo> pageInfo = userService.list(startMonth,endMonth);
         return RestResponse.ok(pageInfo);
     }
 

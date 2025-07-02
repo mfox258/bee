@@ -12,9 +12,9 @@ import java.util.List;
 public interface SchedulingInfoService extends IService<SchedulingInfo> {
     void edit(SchedulingEditRequest request);
 
-    Workbook export(String month);
+    Workbook export(String startMonth, String endMonth);
 
-    Workbook exportStatistics(String month);
+    Workbook exportStatistics(String startMonth, String endMonth);
 
-    List<SchedulingStatisticsResponse> statisticsList(String month);
+    List<SchedulingStatisticsResponse> statisticsList(String startMonth, String endMonth);
 }

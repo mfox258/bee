@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.collect.Lists;
+import com.lark.oapi.core.utils.Sets;
 import com.mindskip.xzs.domain.ClassesRule;
 import com.mindskip.xzs.domain.SchedulingInfo;
 import com.mindskip.xzs.domain.User;
@@ -37,14 +38,15 @@ public class SchedulingInfoServiceImpl extends ServiceImpl<SchedulingInfoMapper,
     @Transactional
     public void edit(SchedulingEditRequest request) {
         this.baseMapper.delete(Wrappers.<SchedulingInfo>lambdaQuery()
-                .eq(SchedulingInfo::getMonth,request.getMonth())
+                .ge(SchedulingInfo::getMonth,request.getStartMonth())
+                .le(SchedulingInfo::getMonth,request.getEndMonth())
                 .in(CollectionUtils.isNotEmpty(request.getSchedulingInfos()),SchedulingInfo::getUserName,request.getSchedulingInfos().stream().map(SchedulingInfo::getUserName).collect(Collectors.toList())));
         this.saveBatch(request.getSchedulingInfos());
     }
 
     @Override
-    public Workbook export(String month) {
-        List<SchedulingInfo> schedulingInfos = userMapper.list(month);
+    public Workbook export(String startMonth, String endMonth) {
+        List<SchedulingInfo> schedulingInfos = userMapper.list(startMonth, endMonth);
         List<User> allUser = userMapper.getAllUser();
         List<User> guests = allUser.stream().filter(user -> user.getRole() == 1).sorted(Comparator.comparing(User::getUserLevel)).collect(Collectors.toList());
 
@@ -52,14 +54,19 @@ public class SchedulingInfoServiceImpl extends ServiceImpl<SchedulingInfoMapper,
             return new HSSFWorkbook();
         }
         //1.sheet名
-        String sheetName = "排班表("+month+")";
+        String sheetName = "排班表("+startMonth+"-"+endMonth+")";
         //2.sheet的keys
         List<String> keys = Lists.newArrayList();
         keys.add("姓名");
         //2.2日期
-        List<String> monthDates = DateUtils.getAllDatesOfMonth(month);
+        Set<String> uniqueDates = new HashSet<>();
+        List<String> monthDates = DateUtils.getAllDatesOfMonth(startMonth);
+        List<String> endDates = DateUtils.getAllDatesOfMonth(endMonth);
+        monthDates.addAll(endDates);
         for (String date : monthDates) {
-            keys.add(date);
+            if (uniqueDates.add(date)) {
+                keys.add(date);
+            }
         }
 
         //3.sheet的names
@@ -91,18 +98,19 @@ public class SchedulingInfoServiceImpl extends ServiceImpl<SchedulingInfoMapper,
             });
         }
 
-        return ExcelUtils.createSchedulingWorkbook(sheetName,keys,names,weekData,datas,month);
+        return ExcelUtils.createSchedulingWorkbook(sheetName,keys,names,weekData,datas,startMonth);
     }
 
     /**
      * 导出统计信息
-     * @param month
+     * @param startMonth
+     * @param endMonth
      * @return
      */
     @Override
-    public Workbook exportStatistics(String month) {
+    public Workbook exportStatistics(String startMonth, String endMonth) {
         //查询人员班次统计
-        List<SchedulingStatisticsResponse> statisticsResponses = this.statisticsList(month);
+        List<SchedulingStatisticsResponse> statisticsResponses = this.statisticsList(startMonth, endMonth);
         //查询需要统计的班次
         List<String> classesList = classesService.selectList(1, null, null);
         //查询员工列表
@@ -113,7 +121,7 @@ public class SchedulingInfoServiceImpl extends ServiceImpl<SchedulingInfoMapper,
             return new HSSFWorkbook();
         }
         //1.sheet名
-        String sheetName = "排班表统计("+month+")";
+        String sheetName = "排班表统计("+startMonth+"-"+endMonth+")";
         //2.sheet的keys
         List<String> keys = Lists.newArrayList();
         keys.add("姓名");
@@ -150,9 +158,9 @@ public class SchedulingInfoServiceImpl extends ServiceImpl<SchedulingInfoMapper,
     }
 
     @Override
-    public List<SchedulingStatisticsResponse> statisticsList(String month) {
+    public List<SchedulingStatisticsResponse> statisticsList(String startMonth, String endMonth) {
         List<SchedulingStatisticsResponse> statisticsResponses = Lists.newArrayList();
-        List<SchedulingInfo> schedulingInfos = userMapper.list(month);
+        List<SchedulingInfo> schedulingInfos = userMapper.list(startMonth,endMonth);
         List<String> classes = classesService.selectList(1, null, null);
         List<ClassesRule> classesRules = classesRuleService.selectList();
         Map<String, List<SchedulingInfo>> userSchedulings = schedulingInfos.stream().collect(Collectors.groupingBy(SchedulingInfo::getUserName));

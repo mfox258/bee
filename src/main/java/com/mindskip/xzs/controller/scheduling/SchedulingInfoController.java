@@ -39,20 +39,20 @@ public class SchedulingInfoController extends BaseApiController {
     }
 
     @GetMapping("/export")
-    public void export(@RequestParam("month") String month, HttpServletResponse response) {
-        Workbook workbook=this.schedulingInfoService.export(month);
+    public void export(@RequestParam("startMonth") String startMonth,@RequestParam("endMonth") String endMonth, HttpServletResponse response) {
+        Workbook workbook=this.schedulingInfoService.export(startMonth,endMonth);
         ExcelUtils.downLoadExcel("scheduling.xls",response,workbook);
 
     }
 
     @GetMapping("/statistics/list")
-    public RestResponse<List<SchedulingStatisticsResponse>> statisticsList(@RequestParam("month") String month) {
-        List<SchedulingStatisticsResponse> statisticsResponses =  this.schedulingInfoService.statisticsList(month);
+    public RestResponse<List<SchedulingStatisticsResponse>> statisticsList(@RequestParam("startMonth") String startMonth,@RequestParam("endMonth") String endMonth) {
+        List<SchedulingStatisticsResponse> statisticsResponses =  this.schedulingInfoService.statisticsList(startMonth,endMonth);
         return RestResponse.ok(statisticsResponses);
     }
     @GetMapping("/statistics/export")
-    public void exportStatistics(@RequestParam("month") String month, HttpServletResponse response) {
-        Workbook workbook=this.schedulingInfoService.exportStatistics(month);
+    public void exportStatistics(@RequestParam("startMonth") String startMonth,@RequestParam("endMonth") String endMonth, HttpServletResponse response) {
+        Workbook workbook=this.schedulingInfoService.exportStatistics(startMonth,endMonth);
         ExcelUtils.downLoadExcel("scheduling.xls",response,workbook);
 
     }

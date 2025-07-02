@@ -160,8 +160,8 @@ public class UserServiceImpl extends BaseServiceImpl<User> implements UserServic
     }
 
     @Override
-    public List<SchedulingInfo> list(String queryMonth) {
-        return userMapper.list(queryMonth);
+    public List<SchedulingInfo> list(String startMonth,String endMonth) {
+        return userMapper.list(startMonth, endMonth);
 
     }
 }

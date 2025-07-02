@@ -417,7 +417,7 @@
         `month` as 'month'
       from
         t_user t1
-          left join t_scheduling_info t2 on t1.real_name =t2.user_name and t2.`month` = #{queryMonth}
+          left join t_scheduling_info t2 on t1.real_name =t2.user_name and t2.`month` >= #{startMonth} and t2.`month`&lt;= #{endMonth}
       where
         t1.`role` =1
       and t1.status=1

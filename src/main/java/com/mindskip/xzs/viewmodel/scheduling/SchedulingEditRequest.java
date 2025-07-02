@@ -8,6 +8,7 @@ import java.util.List;
 @Data
 public class SchedulingEditRequest {
 
-    private String month;
+    private String startMonth;
+    private String endMonth;
     List<SchedulingInfo> schedulingInfos;
 }
