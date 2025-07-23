@@ -131,4 +131,10 @@ public interface UserMapper extends BaseMapper<User> {
     User selectByWxOpenId(@Param("wxOpenId") String wxOpenId);
 
     List<SchedulingInfo> list(@Param("startMonth") String startMonth, @Param("endMonth") String endMonth);
+
+    /**
+     * 获取活跃用户
+     * @return
+     */
+    List<User> getActiveUser();
 }

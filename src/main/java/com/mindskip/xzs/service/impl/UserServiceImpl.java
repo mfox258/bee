@@ -93,7 +93,7 @@ public class UserServiceImpl extends BaseServiceImpl<User> implements UserServic
 
     @Override
     public PageInfo<User> userPage(UserPageRequestVM requestVM) {
-        return PageHelper.startPage(requestVM.getPageIndex(), requestVM.getPageSize(), "id desc").doSelectPageInfo(() ->
+        return PageHelper.startPage(requestVM.getPageIndex(), requestVM.getPageSize(), "user_level asc").doSelectPageInfo(() ->
                 userMapper.userPage(requestVM)
         );
     }

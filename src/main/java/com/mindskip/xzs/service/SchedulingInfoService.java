@@ -17,4 +17,6 @@ public interface SchedulingInfoService extends IService<SchedulingInfo> {
     Workbook exportStatistics(String startMonth, String endMonth);
 
     List<SchedulingStatisticsResponse> statisticsList(String startMonth, String endMonth);
+
+    List<SchedulingStatisticsResponse> statistic(String startMonth, String endMonth);
 }

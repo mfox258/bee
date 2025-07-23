@@ -5,6 +5,7 @@ package com.mindskip.xzs.viewmodel.admin.user;
 import lombok.Data;
 
 import javax.validation.constraints.NotBlank;
+import java.math.BigDecimal;
 
 @Data
 public class UserCreateVM {
@@ -32,5 +33,7 @@ public class UserCreateVM {
     private Integer role;
 
     private Integer userLevel;
+
+    private String jobRank;
 
 }

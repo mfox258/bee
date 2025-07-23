@@ -5,12 +5,14 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.mindskip.xzs.domain.Classes;
 import com.mindskip.xzs.repository.ClassesMapper;
+import com.mindskip.xzs.repository.ClassesStatisticRuleMapper;
 import com.mindskip.xzs.service.ClassesService;
 import com.mindskip.xzs.viewmodel.classes.ClassesPageRequestVM;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 
 
 @Service
@@ -18,11 +20,16 @@ import java.util.List;
 public class ClassesServiceImpl extends ServiceImpl<ClassesMapper, Classes> implements ClassesService {
 
     private final ClassesMapper classesMapper;
+    private final ClassesStatisticRuleMapper classesStatisticRuleMapper;
 
     @Override
     public List<String> selectList(Integer isCount, String targetClasses, Integer color) {
+        if (Objects.equals(isCount,2)){
+            return classesStatisticRuleMapper.list();
+        }
         return this.classesMapper.list(isCount,targetClasses,color);
     }
+
 
     @Override
     public PageInfo<Classes> page(ClassesPageRequestVM vm) {

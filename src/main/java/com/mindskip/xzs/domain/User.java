@@ -3,6 +3,7 @@ package com.mindskip.xzs.domain;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.Date;
 @Data
 public class User implements Serializable {
@@ -71,5 +72,7 @@ public class User implements Serializable {
      * 微信openId
      */
     private String wxOpenId;
+
+    private String jobRank;
 
 }

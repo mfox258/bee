@@ -1,13 +1,16 @@
 package com.mindskip.xzs.service.impl;
 
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.collect.Lists;
 import com.lark.oapi.core.utils.Sets;
 import com.mindskip.xzs.domain.ClassesRule;
+import com.mindskip.xzs.domain.ClassesStatisticRule;
 import com.mindskip.xzs.domain.SchedulingInfo;
 import com.mindskip.xzs.domain.User;
+import com.mindskip.xzs.repository.ClassesStatisticRuleMapper;
 import com.mindskip.xzs.repository.SchedulingInfoMapper;
 import com.mindskip.xzs.repository.UserMapper;
 import com.mindskip.xzs.service.ClassesRuleService;
@@ -24,6 +27,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -34,6 +38,7 @@ public class SchedulingInfoServiceImpl extends ServiceImpl<SchedulingInfoMapper,
     private final UserMapper userMapper;
     private final ClassesRuleService classesRuleService;
     private final ClassesService classesService;
+    private final ClassesStatisticRuleMapper classesStatisticRuleMapper;
     @Override
     @Transactional
     public void edit(SchedulingEditRequest request) {
@@ -203,4 +208,111 @@ public class SchedulingInfoServiceImpl extends ServiceImpl<SchedulingInfoMapper,
         Map<String, Integer> userLevelMap = allUser.stream().filter(user -> user.getRole() == 1).collect(Collectors.toMap(User::getRealName, User::getUserLevel, (v1, v2) -> v1));
         return statisticsResponses.stream().sorted(Comparator.comparing(o->userLevelMap.get(o.getUserName()))).collect(Collectors.toList());
     }
+
+    @Override
+    public List<SchedulingStatisticsResponse> statistic(String startMonth, String endMonth) {
+        List<SchedulingStatisticsResponse> responses=new ArrayList<>();
+
+        List<SchedulingStatisticsResponse> statisticsResponses = this.statisticsList(startMonth, endMonth);
+        List<ClassesStatisticRule> classesStatisticRules = this.classesStatisticRuleMapper.selectList(Wrappers.<ClassesStatisticRule>lambdaQuery().isNotNull(ClassesStatisticRule::getRatio));
+        Map<String, String> classesStatisticRuleMap = classesStatisticRules.stream().collect(Collectors.toMap(ClassesStatisticRule::getClasses, ClassesStatisticRule::getStatisticClasses, (o1, o2) -> o1));
+        Map<String, Double> classesStatisticRatioMap = classesStatisticRules.stream().collect(Collectors.toMap(ClassesStatisticRule::getStatisticClasses, ClassesStatisticRule::getRatio, (o1, o2) -> o1));
+        Map<String, String> classesStatisticMap = new HashMap<>();
+        //查询用户的职级
+        List<User> users = userMapper.getActiveUser();
+        Map<String, String> userJobRankMap = users.stream().filter(data->StringUtils.isNotEmpty(data.getJobRank())).collect(Collectors.toMap(User::getRealName, User::getJobRank, (o1, o2) -> o1));
+
+        //刷新排班的班次名称
+        for (SchedulingStatisticsResponse statisticsRespons : statisticsResponses) {
+            statisticsRespons.setClasses(classesStatisticRuleMap.get(statisticsRespons.getClasses()));
+        }
+        //分组就和
+        statisticsResponses.stream().filter(data-> StringUtils.isNotEmpty(data.getClasses())).collect(Collectors.groupingBy(data->data.getUserName()+"-"+data.getClasses())).forEach((classes, list)->{
+            String sumCount = classesStatisticMap.get(list.get(0).getUserName());
+            if (Objects.isNull(sumCount)){
+                sumCount="0";
+            }
+
+            SchedulingStatisticsResponse response = new SchedulingStatisticsResponse();
+            response.setClasses(list.get(0).getClasses());
+            response.setUserName(list.get(0).getUserName());
+            // 将 count 类型改为 BigDecimal
+            BigDecimal count = list.stream()
+                    .map(data -> new BigDecimal(data.getCount()))
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+            if (count.compareTo(BigDecimal.ZERO) == 0) {
+                response.setCount("");
+            } else if (Objects.equals(list.get(0).getClasses(), "休假")) {
+                response.setCount(count.stripTrailingZeros().toPlainString());
+            } else {
+                // 将 ratio 类型改为 BigDecimal
+                BigDecimal ratio = BigDecimal.valueOf(classesStatisticRatioMap.getOrDefault(list.get(0).getClasses(), 0.0));
+                // 调用 multiplyAndRound 方法，传入 BigDecimal 类型参数
+                String result = multiplyAndRound(ratio, count);
+                sumCount = sumAsBigDecimal(result, sumCount);
+                response.setCount(String.format("%s*%s=%s", ratio.stripTrailingZeros().toPlainString(), count.stripTrailingZeros().toPlainString(), result));
+            }
+            classesStatisticMap.put(list.get(0).getUserName(), sumCount);
+            responses.add(response);
+        });
+        //处理合计
+        classesStatisticMap.forEach((userName, sumCount) -> {
+            SchedulingStatisticsResponse response = new SchedulingStatisticsResponse();
+            response.setUserName(userName);
+            response.setClasses("总合计");
+            response.setCount(sumCount);
+            responses.add(response);
+        });
+        userJobRankMap.forEach((userName, jobRank) -> {
+            SchedulingStatisticsResponse response = new SchedulingStatisticsResponse();
+            response.setUserName(userName);
+            response.setClasses("职称");
+            response.setCount(jobRank);
+            responses.add(response);
+        });
+
+        return responses;
+    }
+
+    /**
+     * 计算Double与Integer的乘积，并保留2位小数
+     * @param doubleNum 双精度浮点数
+     * @param intNum 整数
+     * @return 保留两位小数的乘积结果
+     */
+    public static String multiplyAndRound(BigDecimal bd1, BigDecimal bd2) {
+        // 处理 null 值情况
+        if (bd1 == null || bd2 == null) {
+            throw new IllegalArgumentException("输入参数不能为 null");
+        }
+
+        BigDecimal product = bd1.multiply(bd2);
+
+        // 四舍五入保留两位小数
+        BigDecimal rounded = product.setScale(2, RoundingMode.HALF_UP);
+
+        // 去掉小数点后的无效 0
+        return rounded.stripTrailingZeros().toPlainString();
+    }
+    /**
+     * 将传入的 result 和 sumCount 转换为 BigDecimal 类型后进行求和，结果以字符串形式返回
+     * @param result 第一个求和参数，可为字符串表示的数字
+     * @param sumCount 第二个求和参数，可为字符串表示的数字
+     * @return 求和结果的字符串表示，若参数为 null 或空字符串则视为 0
+     */
+    public static String sumAsBigDecimal(String result, String sumCount) {
+        // 处理 null 或空字符串，将其视为 0
+        BigDecimal bdResult = StringUtils.isEmpty(result) ? BigDecimal.ZERO : new BigDecimal(result);
+        BigDecimal bdSumCount = StringUtils.isEmpty(sumCount) ? BigDecimal.ZERO : new BigDecimal(sumCount);
+
+        // 进行求和操作
+        BigDecimal sum = bdResult.add(bdSumCount);
+
+        // 去掉小数点后的无效 0 并返回字符串
+        return sum.stripTrailingZeros().toPlainString();
+    }
+    public static void main(String[] args) {
+
+    }
+
 }

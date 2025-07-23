@@ -23,7 +23,7 @@
   </resultMap>
   <sql id="Base_Column_List">
     id, user_uuid, user_name, password, real_name, age, sex, birth_day, user_level, phone,
-    `role`, status, image_path, create_time, modify_time, last_active_time, deleted, wx_open_id
+    `role`, status, image_path, create_time, modify_time, last_active_time, deleted, wx_open_id,job_rank
   </sql>
   <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
     select
@@ -220,6 +220,9 @@
       <if test="wxOpenId != null">
         wx_open_id = #{wxOpenId,jdbcType=VARCHAR},
       </if>
+      <if test="jobRank != null">
+        job_rank = #{jobRank,jdbcType=VARCHAR},
+      </if>
     </set>
     where id = #{id,jdbcType=INTEGER}
   </update>
@@ -241,7 +244,8 @@
       modify_time = #{modifyTime,jdbcType=TIMESTAMP},
       last_active_time = #{lastActiveTime,jdbcType=TIMESTAMP},
       deleted = #{deleted,jdbcType=BIT},
-      wx_open_id = #{wxOpenId,jdbcType=VARCHAR}
+      wx_open_id = #{wxOpenId,jdbcType=VARCHAR},
+      job_rank = #{jobRank,jdbcType=VARCHAR}
     where id = #{id,jdbcType=INTEGER}
   </update>
 
@@ -424,6 +428,17 @@
       and t1.deleted=0
       order by user_level asc
     </select>
+  <select id="getActiveUser" resultType="com.mindskip.xzs.domain.User">
+    select
+    <include refid="Base_Column_List" />
+    from
+      t_user t1
+    where
+      t1.`role` =1
+      and t1.status=1
+      and t1.deleted=0
+    order by user_level asc
+  </select>
 
 
 </mapper>
