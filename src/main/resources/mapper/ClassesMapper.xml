@@ -22,6 +22,9 @@
     <if test="targetClasses!=null and targetClasses!=''">
       and not exists(select id from t_classes_rule where t_classes_rule.target_classes=#{targetClasses} and t_classes_rule.classes=t_classes.classes)
     </if>
+    <if test="color==null">
+      and status=1
+    </if>
     <if test="color!=null">
       and color=#{color}
     </if>

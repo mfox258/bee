@@ -218,6 +218,7 @@ public class SchedulingInfoServiceImpl extends ServiceImpl<SchedulingInfoMapper,
         Map<String, String> classesStatisticRuleMap = classesStatisticRules.stream().collect(Collectors.toMap(ClassesStatisticRule::getClasses, ClassesStatisticRule::getStatisticClasses, (o1, o2) -> o1));
         Map<String, Double> classesStatisticRatioMap = classesStatisticRules.stream().collect(Collectors.toMap(ClassesStatisticRule::getStatisticClasses, ClassesStatisticRule::getRatio, (o1, o2) -> o1));
         Map<String, String> classesStatisticMap = new HashMap<>();
+        Map<String, String> sumDayMap = new HashMap<>();
         //查询用户的职级
         List<User> users = userMapper.getActiveUser();
         Map<String, String> userJobRankMap = users.stream().filter(data->StringUtils.isNotEmpty(data.getJobRank())).collect(Collectors.toMap(User::getRealName, User::getJobRank, (o1, o2) -> o1));
@@ -232,6 +233,10 @@ public class SchedulingInfoServiceImpl extends ServiceImpl<SchedulingInfoMapper,
             if (Objects.isNull(sumCount)){
                 sumCount="0";
             }
+            String sumDayCount = sumDayMap.get(list.get(0).getUserName());
+            if (Objects.isNull(sumDayCount)){
+                sumDayCount="0";
+            }
 
             SchedulingStatisticsResponse response = new SchedulingStatisticsResponse();
             response.setClasses(list.get(0).getClasses());
@@ -240,6 +245,8 @@ public class SchedulingInfoServiceImpl extends ServiceImpl<SchedulingInfoMapper,
             BigDecimal count = list.stream()
                     .map(data -> new BigDecimal(data.getCount()))
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+            sumDayCount = sumAsBigDecimal(count.stripTrailingZeros().toPlainString(), sumDayCount);
             if (count.compareTo(BigDecimal.ZERO) == 0) {
                 response.setCount("");
             } else if (Objects.equals(list.get(0).getClasses(), "休假")) {
@@ -253,6 +260,7 @@ public class SchedulingInfoServiceImpl extends ServiceImpl<SchedulingInfoMapper,
                 response.setCount(String.format("%s*%s=%s", ratio.stripTrailingZeros().toPlainString(), count.stripTrailingZeros().toPlainString(), result));
             }
             classesStatisticMap.put(list.get(0).getUserName(), sumCount);
+            sumDayMap.put(list.get(0).getUserName(), sumDayCount);
             responses.add(response);
         });
         //处理合计
@@ -268,6 +276,13 @@ public class SchedulingInfoServiceImpl extends ServiceImpl<SchedulingInfoMapper,
             response.setUserName(userName);
             response.setClasses("职称");
             response.setCount(jobRank);
+            responses.add(response);
+        });
+        sumDayMap.forEach((userName, sumDayCount) -> {
+            SchedulingStatisticsResponse response = new SchedulingStatisticsResponse();
+            response.setUserName(userName);
+            response.setClasses("总天数");
+            response.setCount(sumDayCount);
             responses.add(response);
         });
 
