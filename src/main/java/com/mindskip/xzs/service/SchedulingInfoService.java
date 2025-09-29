@@ -19,4 +19,12 @@ public interface SchedulingInfoService extends IService<SchedulingInfo> {
     List<SchedulingStatisticsResponse> statisticsList(String startMonth, String endMonth);
 
     List<SchedulingStatisticsResponse> statistic(String startMonth, String endMonth);
+
+    /**
+     * 导出 scheduling 出勤信息
+     * @param year 日期
+     * @param month 日期
+     * @return Workbook
+     */
+    Workbook exportAttendance(Integer year,Integer month);
 }
