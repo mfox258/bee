@@ -107,6 +107,34 @@ public class SchedulingInfoController extends BaseApiController {
             } catch (IOException ex) {
                 log.error("写入错误响应失败", ex);
             }
-        }    }
+        }
+    }
+
+    /**
+     * 导出 scheduling 加班信息
+     * @param year 日期
+     * @param month 日期
+     * @param response HttpServletResponse
+     */
+    @GetMapping("/download/overtime")
+    public void downloadOvertime(@RequestParam("year") Integer year,@RequestParam("month") Integer month,HttpServletResponse response) {
+        try {
+            Workbook workbook = this.schedulingInfoService.exportOvertime(year, month);
+            if (workbook == null) {
+                response.setContentType("application/json;charset=UTF-8");
+                response.getWriter().write("{\"code\":500,\"msg\":\"导出失败：模板文件不存在或数据异常\"}");
+                return;
+            }
+            ExcelUtils.downLoadExcel("scheduling_overtime.xlsx", response, workbook);
+        } catch (Exception e) {
+            log.error("导出加班信息异常", e);
+            try {
+                response.setContentType("application/json;charset=UTF-8");
+                response.getWriter().write("{\"code\":500,\"msg\":\"导出失败：" + e.getMessage() + "\"}");
+            } catch (IOException ex) {
+                log.error("写入错误响应失败", ex);
+            }
+        }
+    }
 
 }

@@ -27,4 +27,12 @@ public interface SchedulingInfoService extends IService<SchedulingInfo> {
      * @return Workbook
      */
     Workbook exportAttendance(Integer year,Integer month);
+
+     /**
+     * 导出 scheduling 加班信息
+     * @param year 日期
+     * @param month 日期
+     * @return Workbook
+     */
+    Workbook exportOvertime(Integer year, Integer month);
 }

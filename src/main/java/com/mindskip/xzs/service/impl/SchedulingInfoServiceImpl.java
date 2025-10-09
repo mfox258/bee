@@ -305,8 +305,7 @@ public class SchedulingInfoServiceImpl extends ServiceImpl<SchedulingInfoMapper,
         YearMonth yearMonth = YearMonth.of(year, month);
         int daysInMonth = yearMonth.lengthOfMonth();
         List<SchedulingInfo> schedulingInfos = this.baseMapper.selectList(new QueryWrapper<SchedulingInfo>().lambda().eq(SchedulingInfo::getMonth, yearMonth.format(DateTimeFormatter.ofPattern("yyyy-MM"))));
-        List<User> allUser = userMapper.getAllUser();
-        List<User> guests = allUser.stream().filter(user -> user.getRole() == 1).sorted(Comparator.comparing(User::getUserLevel)).collect(Collectors.toList());
+        List<User> guests =  userMapper.getActiveUser();
 
         List<ClassesAttendanceMapping> classesAttendanceMappings = classesAttendanceMappingMapper.selectList(new QueryWrapper<>());
         Map<String, ClassesAttendanceMapping> classesAttendanceMappingMap = classesAttendanceMappings.stream().collect(Collectors.toMap(ClassesAttendanceMapping::getClasses,data->data,(o1,o2)->o1));
@@ -423,6 +422,85 @@ public class SchedulingInfoServiceImpl extends ServiceImpl<SchedulingInfoMapper,
             FormulaEvaluator evaluator = workbook.getCreationHelper().createFormulaEvaluator();
             evaluator.evaluateAll(); // 刷新整个工作簿的所有公式
             log.info(year + "年" + month + "月数据填充完成（公式已刷新，AC2/AG2/AS2已填充）");
+            return workbook;
+
+        } catch (IOException e) {
+            log.error("导出 {} 年 {} 月数据失败", year, month, e);
+            throw new RuntimeException(e.getMessage());
+        }
+    }
+
+    @Override
+    public Workbook exportOvertime(Integer year, Integer month) {
+        String templatePath = "/template/work_overtime.xlsx";
+        YearMonth yearMonth = YearMonth.of(year, month);
+
+        List<SchedulingStatisticsResponse> statisticsResponses = this.statisticsList(yearMonth.format(DateTimeFormatter.ofPattern("yyyy-MM")), yearMonth.format(DateTimeFormatter.ofPattern("yyyy-MM")));
+        List<User> guests = userMapper.getActiveUser();
+
+        try ( // 修复：通过类加载器读取classpath中的模板文件，替换FileInputStream
+              InputStream fis = getClass().getResourceAsStream(templatePath);
+        ) {
+            // 验证资源是否存在
+            if (fis == null) {
+                log.error("模板文件不存在: {}", templatePath);
+                return null;
+            }
+
+            // 关键：Workbook不使用try-with-resources，避免自动关闭
+            Workbook workbook = new XSSFWorkbook(fis);
+            Sheet sheet = workbook.getSheetAt(0);
+
+            Row row2 = sheet.getRow(1);
+            if (row2 == null) {
+                row2 = sheet.createRow(1);
+            }
+            Cell cell9 = row2.getCell(8);
+            if (cell9 == null) cell9 = row2.createCell(8);
+            cell9.setCellValue(yearMonth.format(DateTimeFormatter.ofPattern("yyyy年MM月")));
+            Map<String, List<SchedulingStatisticsResponse>> userStatisticsResponses = statisticsResponses.stream().collect(Collectors.groupingBy(SchedulingStatisticsResponse::getUserName));
+            for (int i = 0; i < guests.size(); i++) {
+                User guest = guests.get(i);
+                Row row = sheet.getRow(3+i);
+                if (row == null) row = sheet.createRow(3+i);
+                Cell cell = row.getCell(0);
+                if (cell == null) cell = row.createCell(0);
+                cell.setCellValue(guest.getRealName());
+                List<SchedulingStatisticsResponse> list = userStatisticsResponses.getOrDefault(guest.getRealName(), new ArrayList<>());
+                if (list.isEmpty()){
+                    list=Collections.emptyList();
+                }
+                ArrayList<Double> values = new ArrayList<>();
+                SchedulingStatisticsResponse night = list.stream().filter(schedulingStatisticsResponse ->
+                        Objects.equals(schedulingStatisticsResponse.getClasses(), "夜")).findFirst().orElse(null);
+                SchedulingStatisticsResponse amResponse = list.stream().filter(schedulingStatisticsResponse ->
+                        Objects.equals(schedulingStatisticsResponse.getClasses(), "中")).findFirst().orElse(null);
+                SchedulingStatisticsResponse pmResponse = list.stream().filter(schedulingStatisticsResponse ->
+                        Objects.equals(schedulingStatisticsResponse.getClasses(), "120")).findFirst().orElse(null);
+                values.add(night != null ? Double.parseDouble(night.getCount()) : 0.0);
+                values.add(50d);
+                values.add(amResponse != null ? Double.parseDouble(amResponse.getCount()) : 0.0);
+                values.add(40d);
+                values.add(pmResponse != null ? Double.parseDouble(pmResponse.getCount()) : 0.0);
+                values.add(20d);
+                values.add(0d);
+                values.add(10d);
+                for (int colIndex = 1; colIndex <= 9; colIndex++) {
+                    Cell cell1 = row.getCell(colIndex);
+                    if (cell1 == null) cell1 = row.createCell(colIndex);
+                    int valueIndex = colIndex - 1;
+                    if (valueIndex < values.size()) {
+                        cell1.setCellValue(values.get(valueIndex));
+
+                    } else {
+                        cell1.setCellValue("");
+                    }
+                }
+            }
+
+            // 关键：刷新所有公式单元格（强制重新计算）
+            FormulaEvaluator evaluator = workbook.getCreationHelper().createFormulaEvaluator();
+            evaluator.evaluateAll(); // 刷新整个工作簿的所有公式
             return workbook;
 
         } catch (IOException e) {
