@@ -6,7 +6,6 @@ import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.collect.Lists;
-import com.lark.oapi.core.utils.Sets;
 import com.mindskip.xzs.domain.*;
 import com.mindskip.xzs.repository.ClassesAttendanceMappingMapper;
 import com.mindskip.xzs.repository.ClassesStatisticRuleMapper;
@@ -27,8 +26,6 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
@@ -60,8 +57,15 @@ public class SchedulingInfoServiceImpl extends ServiceImpl<SchedulingInfoMapper,
     }
 
     @Override
-    public Workbook export(String startMonth, String endMonth) {
-        List<SchedulingInfo> schedulingInfos = userMapper.list(startMonth, endMonth);
+    public Workbook export(String startMonth, String endMonth, User currentUser) {
+        List<SchedulingInfo> schedulingInfos;
+        //如果非admin 仅仅可以查询当前周的数据
+        if (Objects.nonNull(currentUser)&&!Objects.equals(currentUser.getUserName(),"admin")){
+            Map<String, LocalDate> saturdayWeekend = DateUtils.getCurrentWeekend();
+            schedulingInfos = userMapper.selectSchedulingInfosAuth(startMonth, endMonth,saturdayWeekend.get(DateUtils.SUNDAY));
+        }else {
+            schedulingInfos = userMapper.selectSchedulingInfos(startMonth, endMonth);
+        }
         List<User> allUser = userMapper.getAllUser();
         List<User> guests = allUser.stream().filter(user -> user.getRole() == 1).sorted(Comparator.comparing(User::getUserLevel)).collect(Collectors.toList());
 
@@ -118,14 +122,16 @@ public class SchedulingInfoServiceImpl extends ServiceImpl<SchedulingInfoMapper,
 
     /**
      * 导出统计信息
+     *
      * @param startMonth
      * @param endMonth
+     * @param currentUser
      * @return
      */
     @Override
-    public Workbook exportStatistics(String startMonth, String endMonth) {
+    public Workbook exportStatistics(String startMonth, String endMonth, User currentUser) {
         //查询人员班次统计
-        List<SchedulingStatisticsResponse> statisticsResponses = this.statisticsList(startMonth, endMonth);
+        List<SchedulingStatisticsResponse> statisticsResponses = this.statisticsList(startMonth, endMonth, currentUser);
         //查询需要统计的班次
         List<String> classesList = classesService.selectList(1, null, null);
         //查询员工列表
@@ -173,9 +179,16 @@ public class SchedulingInfoServiceImpl extends ServiceImpl<SchedulingInfoMapper,
     }
 
     @Override
-    public List<SchedulingStatisticsResponse> statisticsList(String startMonth, String endMonth) {
+    public List<SchedulingStatisticsResponse> statisticsList(String startMonth, String endMonth, User currentUser) {
         List<SchedulingStatisticsResponse> statisticsResponses = Lists.newArrayList();
-        List<SchedulingInfo> schedulingInfos = userMapper.list(startMonth,endMonth);
+        List<SchedulingInfo> schedulingInfos;
+        //如果非admin 仅仅可以查询当前周的数据
+        if (Objects.nonNull(currentUser)&&!Objects.equals(currentUser.getUserName(),"admin")){
+            Map<String, LocalDate> saturdayWeekend = DateUtils.getCurrentWeekend();
+            schedulingInfos = userMapper.selectSchedulingInfosAuth(startMonth, endMonth,saturdayWeekend.get(DateUtils.SUNDAY));
+        }else {
+            schedulingInfos = userMapper.selectSchedulingInfos(startMonth, endMonth);
+        }
         List<String> classes = classesService.selectList(1, null, null);
         List<ClassesRule> classesRules = classesRuleService.selectList();
         Map<String, List<SchedulingInfo>> userSchedulings = schedulingInfos.stream().collect(Collectors.groupingBy(SchedulingInfo::getUserName));
@@ -220,10 +233,9 @@ public class SchedulingInfoServiceImpl extends ServiceImpl<SchedulingInfoMapper,
     }
 
     @Override
-    public List<SchedulingStatisticsResponse> statistic(String startMonth, String endMonth) {
+    public List<SchedulingStatisticsResponse> statistic(String startMonth, String endMonth, User currentUser) {
         List<SchedulingStatisticsResponse> responses=new ArrayList<>();
-
-        List<SchedulingStatisticsResponse> statisticsResponses = this.statisticsList(startMonth, endMonth);
+        List<SchedulingStatisticsResponse> statisticsResponses = this.statisticsList(startMonth, endMonth, currentUser);
         List<ClassesStatisticRule> classesStatisticRules = this.classesStatisticRuleMapper.selectList(Wrappers.<ClassesStatisticRule>lambdaQuery().isNotNull(ClassesStatisticRule::getRatio));
         Map<String, String> classesStatisticRuleMap = classesStatisticRules.stream().collect(Collectors.toMap(ClassesStatisticRule::getClasses, ClassesStatisticRule::getStatisticClasses, (o1, o2) -> o1));
         Map<String, Double> classesStatisticRatioMap = classesStatisticRules.stream().collect(Collectors.toMap(ClassesStatisticRule::getStatisticClasses, ClassesStatisticRule::getRatio, (o1, o2) -> o1));
@@ -431,11 +443,11 @@ public class SchedulingInfoServiceImpl extends ServiceImpl<SchedulingInfoMapper,
     }
 
     @Override
-    public Workbook exportOvertime(Integer year, Integer month) {
+    public Workbook exportOvertime(Integer year, Integer month, User currentUser) {
         String templatePath = "/template/work_overtime.xlsx";
         YearMonth yearMonth = YearMonth.of(year, month);
 
-        List<SchedulingStatisticsResponse> statisticsResponses = this.statisticsList(yearMonth.format(DateTimeFormatter.ofPattern("yyyy-MM")), yearMonth.format(DateTimeFormatter.ofPattern("yyyy-MM")));
+        List<SchedulingStatisticsResponse> statisticsResponses = this.statisticsList(yearMonth.format(DateTimeFormatter.ofPattern("yyyy-MM")), yearMonth.format(DateTimeFormatter.ofPattern("yyyy-MM")), currentUser);
         List<User> guests = userMapper.getActiveUser();
 
         try ( // 修复：通过类加载器读取classpath中的模板文件，替换FileInputStream

@@ -7,6 +7,7 @@ import com.mindskip.xzs.viewmodel.admin.user.UserPageRequestVM;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -130,7 +131,7 @@ public interface UserMapper extends BaseMapper<User> {
 
     User selectByWxOpenId(@Param("wxOpenId") String wxOpenId);
 
-    List<SchedulingInfo> list(@Param("startMonth") String startMonth, @Param("endMonth") String endMonth);
+    List<SchedulingInfo> selectSchedulingInfos(@Param("startMonth") String startMonth, @Param("endMonth") String endMonth);
 
     /**
      * 获取活跃用户
@@ -138,4 +139,12 @@ public interface UserMapper extends BaseMapper<User> {
      */
     List<User> getActiveUser();
 
+    /**
+     * 查询访客的排班列表
+     * @param startMonth
+     * @param endMonth
+     * @param date
+     * @return
+     */
+    List<SchedulingInfo> selectSchedulingInfosAuth(@Param("startMonth") String startMonth, @Param("endMonth") String endMonth,@Param("date") LocalDate date);
 }

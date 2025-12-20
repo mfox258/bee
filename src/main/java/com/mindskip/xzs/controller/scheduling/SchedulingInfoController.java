@@ -2,6 +2,7 @@ package com.mindskip.xzs.controller.scheduling;
 
 import com.mindskip.xzs.base.BaseApiController;
 import com.mindskip.xzs.base.RestResponse;
+import com.mindskip.xzs.domain.User;
 import com.mindskip.xzs.service.SchedulingInfoService;
 import com.mindskip.xzs.utils.ExcelUtils;
 import com.mindskip.xzs.viewmodel.scheduling.SchedulingEditRequest;
@@ -42,7 +43,8 @@ public class SchedulingInfoController extends BaseApiController {
      */
     @GetMapping("/export")
     public void export(@RequestParam("startMonth") String startMonth,@RequestParam("endMonth") String endMonth, HttpServletResponse response) {
-        Workbook workbook=this.schedulingInfoService.export(startMonth,endMonth);
+        User currentUser = getCurrentUser();
+        Workbook workbook=this.schedulingInfoService.export(startMonth,endMonth,currentUser);
         ExcelUtils.downLoadExcel("scheduling.xls",response,workbook);
 
     }
@@ -55,7 +57,8 @@ public class SchedulingInfoController extends BaseApiController {
      */
     @GetMapping("/statistics/list")
     public RestResponse<List<SchedulingStatisticsResponse>> statisticsList(@RequestParam("startMonth") String startMonth,@RequestParam("endMonth") String endMonth) {
-        List<SchedulingStatisticsResponse> statisticsResponses =  this.schedulingInfoService.statisticsList(startMonth,endMonth);
+        User currentUser = getCurrentUser();
+        List<SchedulingStatisticsResponse> statisticsResponses =  this.schedulingInfoService.statisticsList(startMonth,endMonth,currentUser);
         return RestResponse.ok(statisticsResponses);
     }
     /**
@@ -66,7 +69,8 @@ public class SchedulingInfoController extends BaseApiController {
      */
     @GetMapping("/statistics/export")
     public void exportStatistics(@RequestParam("startMonth") String startMonth,@RequestParam("endMonth") String endMonth, HttpServletResponse response) {
-        Workbook workbook=this.schedulingInfoService.exportStatistics(startMonth,endMonth);
+        User currentUser = getCurrentUser();
+        Workbook workbook=this.schedulingInfoService.exportStatistics(startMonth,endMonth,currentUser);
         ExcelUtils.downLoadExcel("scheduling.xls",response,workbook);
 
     }
@@ -79,7 +83,8 @@ public class SchedulingInfoController extends BaseApiController {
      */
     @GetMapping("/statistic")
     public RestResponse<List<SchedulingStatisticsResponse>> statistic(@RequestParam("startMonth") String startMonth,@RequestParam("endMonth") String endMonth) {
-        List<SchedulingStatisticsResponse> statisticsResponses =  this.schedulingInfoService.statistic(startMonth,endMonth);
+        User currentUser = getCurrentUser();
+        List<SchedulingStatisticsResponse> statisticsResponses =  this.schedulingInfoService.statistic(startMonth,endMonth,currentUser);
         return RestResponse.ok(statisticsResponses);
     }
 
@@ -119,7 +124,8 @@ public class SchedulingInfoController extends BaseApiController {
     @GetMapping("/download/overtime")
     public void downloadOvertime(@RequestParam("year") Integer year,@RequestParam("month") Integer month,HttpServletResponse response) {
         try {
-            Workbook workbook = this.schedulingInfoService.exportOvertime(year, month);
+            User currentUser = getCurrentUser();
+            Workbook workbook = this.schedulingInfoService.exportOvertime(year, month,currentUser);
             if (workbook == null) {
                 response.setContentType("application/json;charset=UTF-8");
                 response.getWriter().write("{\"code\":500,\"msg\":\"导出失败：模板文件不存在或数据异常\"}");

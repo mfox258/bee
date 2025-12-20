@@ -48,9 +48,16 @@ public class UserController extends BaseApiController {
         return RestResponse.ok(page);
     }
 
+    /**
+     * 查询排班列表
+     * @param startMonth
+     * @param endMonth
+     * @return
+     */
     @RequestMapping(value = "/list", method = RequestMethod.GET)
     public RestResponse<List<SchedulingInfo>> list(@RequestParam("startMonth") String startMonth,@RequestParam("endMonth") String endMonth) {
-        List<SchedulingInfo> pageInfo = userService.list(startMonth,endMonth);
+        User currentUser = getCurrentUser();
+        List<SchedulingInfo> pageInfo = userService.list(startMonth,endMonth,currentUser);
         return RestResponse.ok(pageInfo);
     }
 

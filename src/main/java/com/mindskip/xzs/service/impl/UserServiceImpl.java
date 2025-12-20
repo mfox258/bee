@@ -7,6 +7,7 @@ import com.mindskip.xzs.domain.User;
 import com.mindskip.xzs.event.OnRegistrationCompleteEvent;
 import com.mindskip.xzs.repository.UserMapper;
 import com.mindskip.xzs.service.UserService;
+import com.mindskip.xzs.utils.DateUtils;
 import com.mindskip.xzs.viewmodel.admin.user.UserPageRequestVM;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -15,9 +16,11 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 
 @Service
@@ -160,8 +163,13 @@ public class UserServiceImpl extends BaseServiceImpl<User> implements UserServic
     }
 
     @Override
-    public List<SchedulingInfo> list(String startMonth,String endMonth) {
-        return userMapper.list(startMonth, endMonth);
+    public List<SchedulingInfo> list(String startMonth, String endMonth, User currentUser) {
+        //如果非admin 仅仅可以查询当前周的数据
+        if (Objects.nonNull(currentUser)&&!Objects.equals(currentUser.getUserName(),"admin")){
+            Map<String, LocalDate> saturdayWeekend = DateUtils.getCurrentWeekend();
+            return userMapper.selectSchedulingInfosAuth(startMonth, endMonth,saturdayWeekend.get(DateUtils.SUNDAY));
+        }
+        return userMapper.selectSchedulingInfos(startMonth, endMonth);
 
     }
 }

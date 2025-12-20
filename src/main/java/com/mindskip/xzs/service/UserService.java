@@ -127,5 +127,5 @@ public interface UserService extends BaseService<User> {
 
     void changePicture(User user, String imagePath);
 
-    List<SchedulingInfo> list(String startMonth,String endMonth);
+    List<SchedulingInfo> list(String startMonth, String endMonth, User currentUser);
 }
