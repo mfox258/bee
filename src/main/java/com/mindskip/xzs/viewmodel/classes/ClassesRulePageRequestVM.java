@@ -7,4 +7,5 @@ import lombok.Data;
 public class ClassesRulePageRequestVM extends BasePage {
 
     private String keyword;
+    private String classes;
 }

@@ -74,5 +74,7 @@ public class User implements Serializable {
     private String wxOpenId;
 
     private String jobRank;
+    //1有权限
+    private Integer auth;
 
 }

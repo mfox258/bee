@@ -7,6 +7,7 @@
     select *
     from t_classes_rule
     where deleted=0
+    and classes=#{vm.classes}
       <if test="vm.keyword!=null and vm.keyword!=''">
         and classes like concat ('%',#{vm.keyword},'%')
       </if>

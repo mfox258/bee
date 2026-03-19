@@ -165,7 +165,7 @@ public class UserServiceImpl extends BaseServiceImpl<User> implements UserServic
     @Override
     public List<SchedulingInfo> list(String startMonth, String endMonth, User currentUser) {
         //如果非admin 仅仅可以查询当前周的数据
-        if (Objects.nonNull(currentUser)&&!Objects.equals(currentUser.getUserName(),"admin")){
+        if (Objects.nonNull(currentUser)&&!Objects.equals(currentUser.getUserName(),"admin")&&!Objects.equals(currentUser.getAuth(),1)){
             Map<String, LocalDate> saturdayWeekend = DateUtils.getCurrentWeekend();
             return userMapper.selectSchedulingInfosAuth(startMonth, endMonth,saturdayWeekend.get(DateUtils.SUNDAY));
         }

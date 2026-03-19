@@ -60,7 +60,7 @@ public class SchedulingInfoServiceImpl extends ServiceImpl<SchedulingInfoMapper,
     public Workbook export(String startMonth, String endMonth, User currentUser) {
         List<SchedulingInfo> schedulingInfos;
         //如果非admin 仅仅可以查询当前周的数据
-        if (Objects.nonNull(currentUser)&&!Objects.equals(currentUser.getUserName(),"admin")){
+        if (Objects.nonNull(currentUser)&&!Objects.equals(currentUser.getUserName(),"admin")&&!Objects.equals(currentUser.getAuth(),1)){
             Map<String, LocalDate> saturdayWeekend = DateUtils.getCurrentWeekend();
             schedulingInfos = userMapper.selectSchedulingInfosAuth(startMonth, endMonth,saturdayWeekend.get(DateUtils.SUNDAY));
         }else {
@@ -183,7 +183,7 @@ public class SchedulingInfoServiceImpl extends ServiceImpl<SchedulingInfoMapper,
         List<SchedulingStatisticsResponse> statisticsResponses = Lists.newArrayList();
         List<SchedulingInfo> schedulingInfos;
         //如果非admin 仅仅可以查询当前周的数据
-        if (Objects.nonNull(currentUser)&&!Objects.equals(currentUser.getUserName(),"admin")){
+        if (Objects.nonNull(currentUser)&&!Objects.equals(currentUser.getUserName(),"admin")&&!Objects.equals(currentUser.getAuth(),1)){
             Map<String, LocalDate> saturdayWeekend = DateUtils.getCurrentWeekend();
             schedulingInfos = userMapper.selectSchedulingInfosAuth(startMonth, endMonth,saturdayWeekend.get(DateUtils.SUNDAY));
         }else {
